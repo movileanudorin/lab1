@@ -4,38 +4,29 @@
 #include <chrono>
 #include "sha256.h"
 
-
-int check_comandline_passed_arguments(int argc, char *argv[])
+void check_commandline_passed_arguments(int argc, char *argv[])
 {
-    char* app_name = argv[0];
-    if(argc == 1){
-        std::cout << "Call application "<< app_name << " with arguments [n]." << std::endl;
-        std::cout << "Example:" << std::endl;
-        std::cout << app_name <<" 7 -- Application will try to solve crypto puzzle SHA256 with nonce that will generate 7 trailing 0 of the hashed message." << std::endl;
-        std::cout << app_name <<" 8 -- Application will try to solve crypto puzzle SHA256 with nonce that will generate 8 trailing 0 of the hashed message." << std::endl;
-
-        exit(0);
-    }
-    if(argc > 2)
-    {
+    if (argc != 2) {
         std::cout << "Incorrect arguments passed." << std::endl;
-        std::cout << "Call application "<< app_name << " for help message" << std::endl;
+        std::cout << "Call application " << argv[0] << " with a single argument [n]." << std::endl;
+        std::cout << "Example: " << std::endl;
+        std::cout << argv[0] << " 7 -- Application will try to solve crypto puzzle SHA256 with nonce that will generate 7 trailing 0s of the hashed message." << std::endl;
         exit(1);
     }
 }
 
-int main (int argc, char *argv[]) 
+int main(int argc, char *argv[]) 
 {
-    check_comandline_passed_arguments(argc, argv);
+    check_commandline_passed_arguments(argc, argv);
 
-    int difficulty = atoi(argv[1]);
+    int difficulty = std::stoi(argv[1]);
     SHA256 sha256;
     const std::string message("Hello World");
 
     std::cout << "Message:" << std::endl << message << std::endl;
     std::cout << "Hash:" << std::endl << sha256(message) << std::endl;
     std::cout << std::endl << std::endl;
-    std::cout << "Looking for nonce to solve crypto-puzzle with " << difficulty << " difficulty" << "..." << std::endl;
+    std::cout << "Looking for nonce to solve crypto-puzzle with " << difficulty << " difficulty..." << std::endl;
     auto t1 = std::chrono::high_resolution_clock::now();
 
     std::cout << "Application with OpenMP parameters:" << std::endl;
@@ -45,10 +36,13 @@ int main (int argc, char *argv[])
     {
         current_thread_id = omp_get_thread_num();
         total_threads = omp_get_num_threads();
-        std::cout << "Total threads: " << total_threads << std::endl;
-        std::cout << "Current thread: " << current_thread_id << std::endl;
+        #pragma omp critical
+        {
+            std::cout << "Total threads: " << total_threads << std::endl;
+            std::cout << "Current thread: " << current_thread_id << std::endl;
+        }
         
-        // Insert your function here to solve crypto puzzle
+        // Insert your function here to solve the crypto puzzle
     }
     // Insert code to output the result
 
@@ -56,5 +50,4 @@ int main (int argc, char *argv[])
     auto duration_milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1);
 
     std::cout << duration_milliseconds.count() << " milliseconds\n";
-
 }
